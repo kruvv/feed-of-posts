@@ -4,7 +4,7 @@ import postReducer from '@/features/posts/postsSlice'
 export const store = configureStore({
   // Pass in the root reducer setup as the `reducer` argument
   reducer: {
-    post: postReducer,
+    posts: postReducer,
   },
 })
 
