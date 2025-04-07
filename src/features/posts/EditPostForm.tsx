@@ -1,12 +1,12 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { postUpdated } from './postsSlice'
+import { postUpdated, selectPostById } from './postsSlice'
 
 export const EditPostForm = () => {
   const { postId } = useParams()
 
-  const post = useAppSelector((state) => state.posts.find((post) => post.id === postId))
+  const post = useAppSelector((state) => selectPostById(state, postId!))
 
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
