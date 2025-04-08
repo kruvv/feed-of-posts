@@ -1,9 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAppSelector } from '@/app/hooks'
 import { selectPostById } from './postsSlice'
+import { PostAuthor } from './PostAuthor'
+import { ReactionButtons } from './ReactionButtons'
 
 export const SinglePostPage = () => {
-  const postId = useParams()
+  const { postId } = useParams()
+
   const post = useAppSelector((state) => selectPostById(state, postId!))
 
   if (!post) {
@@ -25,6 +28,8 @@ export const SinglePostPage = () => {
         >
           Edit Post
         </Link>
+        <PostAuthor userId={post.user} />
+        <ReactionButtons post={post} />
       </article>
     </section>
   )
