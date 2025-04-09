@@ -3,6 +3,14 @@ import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { postUpdated, selectPostById } from './postsSlice'
 
+interface EditPostFormFields extends HTMLFormControlsCollection {
+  postTitle: HTMLInputElement
+  postContent: HTMLTextAreaElement
+}
+interface EditPostFormElements extends HTMLFormElement {
+  readonly elements: EditPostFormFields
+}
+
 export const EditPostForm = () => {
   const { postId } = useParams()
 
@@ -25,7 +33,7 @@ export const EditPostForm = () => {
     const content = elements.postContent.value
 
     if (title && content) {
-      dispatch(postUpdated({ id: post?.id, title, content }))
+      dispatch(postUpdated({ id: post?.id!, title, content }))
       navigate(`/posts/${postId}`)
     }
   }
