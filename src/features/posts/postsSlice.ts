@@ -1,6 +1,5 @@
 import { RootState } from '@/app/store'
 import { createSlice, nanoid, PayloadAction } from '@reduxjs/toolkit'
-import { sub } from 'date-fns'
 import { userLoggedOut } from '../auth/authSlice'
 import { createAppAsyncThunk } from '@/app/withTypes'
 import { client } from '@/api/client'
@@ -25,6 +24,7 @@ export interface Post {
 }
 
 type PostUpdate = Pick<Post, 'id' | 'title' | 'content'>
+type NewPost = Pick<Post, 'title' | 'content' | 'user'>
 
 interface PostsState {
   posts: Post[]
@@ -63,28 +63,16 @@ const initialState: PostsState = {
   error: null,
 }
 
+export const addNewPost = createAppAsyncThunk('posts/AddNewPost', async (initialPost: NewPost) => {
+  const response = await client.post<Post>('/fakeApi/posts', initialPost)
+  return response.data
+})
+
 // Create the slice and pass in the initial state
 const postsSlice = createSlice({
   name: 'posts',
   initialState,
   reducers: {
-    postAdded: {
-      reducer(state, action: PayloadAction<Post>) {
-        state.posts.push(action.payload)
-      },
-      prepare(title: string, content: string, userId: string) {
-        return {
-          payload: {
-            id: nanoid(),
-            title,
-            content,
-            user: userId,
-            date: new Date().toISOString(),
-            reactions: initialReactions,
-          },
-        }
-      },
-    },
     postUpdated(state, action: PayloadAction<PostUpdate>) {
       const { id, title, content } = action.payload
       const existingPost = state.posts.find((post) => post.id === id)
@@ -118,10 +106,13 @@ const postsSlice = createSlice({
         state.status = 'failed'
         state.error = action.error.message ?? 'Unknown Error'
       })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        state.posts.push(action.payload)
+      })
   },
 })
 
-export const { postAdded, postUpdated, reactionAdded } = postsSlice.actions
+export const { postUpdated, reactionAdded } = postsSlice.actions
 
 // Export the generated reducer function
 export default postsSlice.reducer
