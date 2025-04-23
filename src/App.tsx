@@ -9,6 +9,7 @@ import { useAppSelector } from '@/app/hooks'
 import { selectCurrentUsername } from '@/features/auth/authSlice'
 import { UsersList } from './features/users/UsersList'
 import { UserPage } from './features/users/UserPage'
+import { NotificationsList } from './features/notifications/NotificationsList'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAppSelector(selectCurrentUsername)
@@ -57,6 +58,10 @@ function App() {
                   <Route
                     path="/users/:userId"
                     element={<UserPage />}
+                  />
+                  <Route
+                    path="/notifications"
+                    element={<NotificationsList />}
                   />
                 </Routes>
               </ProtectedRoute>
