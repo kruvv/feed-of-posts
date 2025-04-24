@@ -1,17 +1,27 @@
 import { Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
-import { fetchPosts, Post, selectAllPosts, selectPostsError, selectPostsStatus } from './postsSlice'
+import {
+  fetchPosts,
+  selectAllPosts,
+  selectPostById,
+  selectPostIds,
+  selectPostsError,
+  selectPostsStatus,
+} from './postsSlice'
 import { PostAuthor } from './PostAuthor'
 import { TimeAgo } from '@/components/TimeAgo'
 import { ReactionButtons } from './ReactionButtons'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Spinner } from '@/components/Spinner'
+import { useSelector } from 'react-redux'
 
 interface PostExcerptProps {
-  post: Post
+  postId: string
 }
 
-function PostExcerpt({ post }: PostExcerptProps) {
+function PostExcerpt({ postId }: PostExcerptProps) {
+  const post = useAppSelector((state) => selectPostById(state, postId))
+
   return (
     <article
       className="post-excerpt"
@@ -32,10 +42,9 @@ function PostExcerpt({ post }: PostExcerptProps) {
 
 export const PostsList = () => {
   const dispatch = useAppDispatch()
-  const posts = useAppSelector(selectAllPosts)
   const postStatus = useAppSelector(selectPostsStatus)
   const postsError = useAppSelector(selectPostsError)
-  const orderPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
+  const orderPostIds = useSelector(selectPostIds)
 
   useEffect(() => {
     if (postStatus === 'idle') {
@@ -48,31 +57,15 @@ export const PostsList = () => {
   if (postStatus === 'pending') {
     content = <Spinner text="Loading..." />
   } else if (postStatus === 'succeeded') {
-    const orderPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
-    content = orderPosts.map((post) => (
+    content = orderPostIds.map((postId) => (
       <PostExcerpt
-        key={post.id}
-        post={post}
+        key={postId}
+        postId={postId}
       />
     ))
-  } else if (postStatus === 'failed') {
+  } else if (postStatus === 'rejected') {
     content = <div>{postsError}</div>
   }
-
-  // const renderedPosts = orderPosts.map((post) => (
-  //   <article
-  //     className="post-excerpt"
-  //     key={post.id}
-  //   >
-  //     <h3>
-  //       <Link to={`/posts/${post.id}`}>{post.title}</Link>
-  //     </h3>
-  //     <p className="post-content">{post.content.substring(0, 100)}</p>
-  //     <PostAuthor userId={post.user} />
-  //     <TimeAgo timestamp={post.date} />
-  //     <ReactionButtons post={post} />
-  //   </article>
-  // ))
 
   return (
     <section className="posts-list">

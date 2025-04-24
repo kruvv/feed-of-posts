@@ -1,8 +1,9 @@
 import { RootState } from '@/app/store'
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createEntityAdapter, createSelector, createSlice, EntityState, PayloadAction } from '@reduxjs/toolkit'
 import { logout } from '../auth/authSlice'
 import { createAppAsyncThunk } from '@/app/withTypes'
 import { client } from '@/api/client'
+import { useId } from 'react'
 
 export interface Reactions {
   thumbsUp: number
@@ -26,11 +27,14 @@ export interface Post {
 type PostUpdate = Pick<Post, 'id' | 'title' | 'content'>
 type NewPost = Pick<Post, 'title' | 'content' | 'user'>
 
-interface PostsState {
-  posts: Post[]
-  status: 'idle' | 'pending' | 'succeeded' | 'failed'
+interface PostsState extends EntityState<Post, string> {
+  status: 'idle' | 'pending' | 'succeeded' | 'rejected'
   error: string | null
 }
+
+const postsAdapter = createEntityAdapter<Post>({
+  sortComparer: (a, b) => b.date.localeCompare(a.date),
+})
 
 const initialReactions: Reactions = {
   thumbsUp: 0,
@@ -57,11 +61,10 @@ export const fetchPosts = createAppAsyncThunk(
 )
 
 // Create an initial state value for the reducer, with that type
-const initialState: PostsState = {
-  posts: [],
+const initialState: PostsState = postsAdapter.getInitialState({
   status: 'idle',
   error: null,
-}
+})
 
 export const addNewPost = createAppAsyncThunk('posts/AddNewPost', async (initialPost: NewPost) => {
   const response = await client.post<Post>('/fakeApi/posts', initialPost)
@@ -75,15 +78,13 @@ const postsSlice = createSlice({
   reducers: {
     postUpdated(state, action: PayloadAction<PostUpdate>) {
       const { id, title, content } = action.payload
-      const existingPost = state.posts.find((post) => post.id === id)
-      if (existingPost) {
-        existingPost.title = title
-        existingPost.content = content
-      }
+
+      postsAdapter.updateOne(state, { id, changes: { title, content } })
     },
     reactionAdded(state, action: PayloadAction<{ postId: string; reaction: ReactionName }>) {
       const { postId, reaction } = action.payload
-      const existingPost = state.posts.find((post) => post.id === postId)
+
+      const existingPost = state.entities[postId]
       if (existingPost) {
         existingPost.reactions[reaction]++
       }
@@ -99,16 +100,14 @@ const postsSlice = createSlice({
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        // Add any fetched posts to the array
-        state.posts.push(...action.payload)
+        // Save the fetched posts into state
+        postsAdapter.setAll(state, action.payload)
       })
       .addCase(fetchPosts.rejected, (state, action) => {
-        state.status = 'failed'
+        state.status = 'rejected'
         state.error = action.error.message ?? 'Unknown Error'
       })
-      .addCase(addNewPost.fulfilled, (state, action) => {
-        state.posts.push(action.payload)
-      })
+      .addCase(addNewPost.fulfilled, postsAdapter.addOne)
   },
 })
 
@@ -117,14 +116,20 @@ export const { postUpdated, reactionAdded } = postsSlice.actions
 // Export the generated reducer function
 export default postsSlice.reducer
 
-export const selectAllPosts = (state: RootState) => state.posts.posts
+// export const selectAllPosts = (state: RootState) => state.posts.posts
 
-export const selectPostById = (state: RootState, postId: string) => state.posts.posts.find((post) => post.id === postId)
+// export const selectPostById = (state: RootState, postId: string) => state.posts.posts.find((post) => post.id === postId)
 
-export const selectPostsByUser = (state: RootState, userId: string) => {
-  const allPosts = selectAllPosts(state)
-  return allPosts.filter((post) => post.user === userId)
-}
+export const {
+  selectAll: selectAllPosts,
+  selectById: selectPostById,
+  selectIds: selectPostIds,
+} = postsAdapter.getSelectors((state: RootState) => state.posts)
+
+export const selectPostsByUser = createSelector(
+  [selectAllPosts, (state: RootState, userId: string) => userId],
+  (posts, userId) => posts.filter((post) => post.user === userId),
+)
 
 export const selectPostsStatus = (state: RootState) => state.posts.status
 
