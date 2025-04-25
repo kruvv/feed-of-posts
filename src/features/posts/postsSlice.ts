@@ -4,6 +4,7 @@ import { logout } from '../auth/authSlice'
 import { createAppAsyncThunk } from '@/app/withTypes'
 import { client } from '@/api/client'
 import { useId } from 'react'
+import { AppStartListening, startAppListening } from '@/app/listenerMiddleware'
 
 export interface Reactions {
   thumbsUp: number
@@ -116,10 +117,6 @@ export const { postUpdated, reactionAdded } = postsSlice.actions
 // Export the generated reducer function
 export default postsSlice.reducer
 
-// export const selectAllPosts = (state: RootState) => state.posts.posts
-
-// export const selectPostById = (state: RootState, postId: string) => state.posts.posts.find((post) => post.id === postId)
-
 export const {
   selectAll: selectAllPosts,
   selectById: selectPostById,
@@ -134,3 +131,21 @@ export const selectPostsByUser = createSelector(
 export const selectPostsStatus = (state: RootState) => state.posts.status
 
 export const selectPostsError = (state: RootState) => state.posts.error
+
+export const addPostsListeners = (startAppListening: AppStartListening) => {
+  startAppListening({
+    actionCreator: addNewPost.fulfilled,
+    effect: async (action, listenerApi) => {
+      const { toast } = await import('react-tiny-toast')
+
+      const toastId = toast.show('New post added!', {
+        variant: 'success',
+        position: 'bottom-right',
+        pause: true,
+      })
+
+      await listenerApi.delay(5000)
+      toast.remove(toastId)
+    },
+  })
+}
