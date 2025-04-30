@@ -1,27 +1,16 @@
 import { Link } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '@/app/hooks'
-import {
-  fetchPosts,
-  selectAllPosts,
-  selectPostById,
-  selectPostIds,
-  selectPostsError,
-  selectPostsStatus,
-} from './postsSlice'
 import { PostAuthor } from './PostAuthor'
 import { TimeAgo } from '@/components/TimeAgo'
 import { ReactionButtons } from './ReactionButtons'
-import React, { useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { Spinner } from '@/components/Spinner'
-import { useSelector } from 'react-redux'
+import { useGetPostsQuery, Post } from '../api/apiSlice'
 
 interface PostExcerptProps {
-  postId: string
+  post: Post
 }
 
-function PostExcerpt({ postId }: PostExcerptProps) {
-  const post = useAppSelector((state) => selectPostById(state, postId))
-
+function PostExcerpt({ post }: PostExcerptProps) {
   return (
     <article
       className="post-excerpt"
@@ -41,30 +30,28 @@ function PostExcerpt({ postId }: PostExcerptProps) {
 }
 
 export const PostsList = () => {
-  const dispatch = useAppDispatch()
-  const postStatus = useAppSelector(selectPostsStatus)
-  const postsError = useAppSelector(selectPostsError)
-  const orderPostIds = useSelector(selectPostIds)
+  const { data: posts = [], isLoading, isSuccess, isError, error } = useGetPostsQuery()
 
-  useEffect(() => {
-    if (postStatus === 'idle') {
-      dispatch(fetchPosts())
-    }
-  }, [postStatus, dispatch])
+  const sortedPosts = useMemo(() => {
+    const sortedPosts = posts.slice()
+
+    sortedPosts.sort((a, b) => b.date.localeCompare(a.date))
+    return sortedPosts
+  }, [posts])
 
   let content: React.ReactNode
 
-  if (postStatus === 'pending') {
+  if (isLoading) {
     content = <Spinner text="Loading..." />
-  } else if (postStatus === 'succeeded') {
-    content = orderPostIds.map((postId) => (
+  } else if (isSuccess) {
+    content = sortedPosts.map((post) => (
       <PostExcerpt
-        key={postId}
-        postId={postId}
+        key={post.id}
+        post={post}
       />
     ))
-  } else if (postStatus === 'rejected') {
-    content = <div>{postsError}</div>
+  } else if (isError) {
+    content = <div>{error.toString()}</div>
   }
 
   return (
