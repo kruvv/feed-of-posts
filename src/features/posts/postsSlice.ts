@@ -3,8 +3,8 @@ import { createEntityAdapter, createSelector, createSlice, EntityState, PayloadA
 import { logout } from '../auth/authSlice'
 import { createAppAsyncThunk } from '@/app/withTypes'
 import { client } from '@/api/client'
-import { useId } from 'react'
-import { AppStartListening, startAppListening } from '@/app/listenerMiddleware'
+import { AppStartListening } from '@/app/listenerMiddleware'
+import { apiSlice } from '../api/apiSlice'
 
 export interface Reactions {
   thumbsUp: number
@@ -25,7 +25,7 @@ export interface Post {
   reactions: Reactions
 }
 
-type PostUpdate = Pick<Post, 'id' | 'title' | 'content'>
+export type PostUpdate = Pick<Post, 'id' | 'title' | 'content'>
 export type NewPost = Pick<Post, 'title' | 'content' | 'user'>
 
 interface PostsState extends EntityState<Post, string> {
@@ -134,7 +134,8 @@ export const selectPostsError = (state: RootState) => state.posts.error
 
 export const addPostsListeners = (startAppListening: AppStartListening) => {
   startAppListening({
-    actionCreator: addNewPost.fulfilled,
+    // actionCreator: addNewPost.fulfilled,
+    matcher: apiSlice.endpoints.addNewPost.matchFulfilled,
     effect: async (action, listenerApi) => {
       const { toast } = await import('react-tiny-toast')
 

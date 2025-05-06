@@ -10,7 +10,7 @@ export const store = configureStore({
   // Pass in the root reducer setup as the `reducer` argument
   reducer: {
     posts: postsReducer,
-    users: usersReducer,
+    // users: usersReducer,
     auth: authReducer,
     notifications: notificationsReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
