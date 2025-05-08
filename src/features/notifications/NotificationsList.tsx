@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/app/hooks'
-import { allNotificationsRead, selectAllNotifications } from './notificationsSlice'
+import { allNotificationsRead, selectMetadataEntities, useGetNotificationsQuery } from './notificationsSlice'
 import { PostAuthor } from '../posts/PostAuthor'
 import { TimeAgo } from '@/components/TimeAgo'
 import { useDispatch } from 'react-redux'
@@ -8,15 +8,17 @@ import classNames from 'classnames'
 
 export const NotificationsList = () => {
   const dispatch = useDispatch()
-  const notifications = useAppSelector(selectAllNotifications)
+  const { data: notifications = [] } = useGetNotificationsQuery()
+  const notificationsMetadata = useAppSelector(selectMetadataEntities)
 
   useLayoutEffect(() => {
     dispatch(allNotificationsRead())
   })
 
   const renderedNotifications = notifications.map((notification) => {
+    const metadata = notificationsMetadata[notification.id]
     const notificationClassname = classNames('notification', {
-      new: notification.isNew,
+      new: metadata.isNew,
     })
 
     return (
