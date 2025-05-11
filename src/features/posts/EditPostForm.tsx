@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEditPostMutation, useGetPostQuery } from '../api/apiSlice'
+import { Spinner } from '@/components/Spinner'
 
 interface EditPostFormFields extends HTMLFormControlsCollection {
   postTitle: HTMLInputElement
@@ -40,6 +41,8 @@ export const EditPostForm = () => {
     }
   }
 
+  const spinner = isLoading ? <Spinner text="Saving..." /> : null
+
   return (
     <section>
       <h2>Edit Post</h2>
@@ -51,6 +54,7 @@ export const EditPostForm = () => {
           name="postTitle"
           defaultValue={post?.title}
           required
+          disabled={isLoading}
         />
         <label htmlFor="postContent">Content:</label>
         <textarea
@@ -58,9 +62,11 @@ export const EditPostForm = () => {
           id="postContent"
           defaultValue={post?.content}
           required
+          disabled={isLoading}
         ></textarea>
-        <button>Save Post</button>
+        <button disabled={isLoading}>Save Post</button>
       </form>
+      {spinner}
     </section>
   )
 }

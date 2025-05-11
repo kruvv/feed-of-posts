@@ -5,12 +5,14 @@ import { TypedUseQueryStateResult } from '@reduxjs/toolkit/query/react'
 import { createSelector } from '@reduxjs/toolkit'
 import { useGetPostQuery, Post } from '@/features/api/apiSlice'
 
+// Create a TS type that represents "the result value passed
+// into the `selectFromResult` function for this hook"
 type GetPostSelectFromResultArg = TypedUseQueryStateResult<Post[], any, any>
 
 const selectPostsForUser = createSelector(
   (res: GetPostSelectFromResultArg) => res.data,
   (res: GetPostSelectFromResultArg, userId: string) => userId,
-  (data, userId) => data?.filter((post) => post.id === userId),
+  (data, userId) => data?.filter((post) => post.user === userId),
 )
 
 export const UserPage = () => {
@@ -19,7 +21,10 @@ export const UserPage = () => {
 
   const { postsForUser } = useGetPostQuery(undefined, {
     selectFromResult: (result) => ({
+      // Optional: Include all of the existing result fields like `isFetching`
       ...result,
+      // Include a field called `postsForUser` in the result object,
+      // which will be a filtered list of posts
       postsForUser: selectPostsForUser(result, userId!),
     }),
   })
@@ -34,7 +39,7 @@ export const UserPage = () => {
 
   const postTitles = postsForUser?.map((post) => (
     <li key={post.id}>
-      <Link to={`/posts/post.id`}>{post.title}</Link>
+      <Link to={`/posts/${post.id}`}>{post.title}</Link>
     </li>
   ))
 

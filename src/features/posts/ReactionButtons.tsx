@@ -1,5 +1,4 @@
-import { useAppDispatch } from '@/app/hooks'
-import { Post, reactionAdded, ReactionName } from './postsSlice'
+import { Post, ReactionName } from './postsSlice'
 import { useAddReactionMutation } from '../api/apiSlice'
 
 const reactionEmoji: Record<ReactionName, string> = {
@@ -18,6 +17,7 @@ export const ReactionButtons = ({ post }: ReactionButtonsProps) => {
   const [addReaction] = useAddReactionMutation()
 
   const reactionButtons = Object.entries(reactionEmoji).map(([stringName, emoji]) => {
+    // Ensure TS knows this is a _specific_ string type
     const reaction = stringName as ReactionName
     return (
       <button

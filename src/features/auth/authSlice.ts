@@ -1,7 +1,7 @@
 import { client } from '@/api/client'
 import { RootState } from '@/app/store'
 import { createAppAsyncThunk } from '@/app/withTypes'
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
 interface AuthState {
   username: string | null
@@ -25,7 +25,6 @@ const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    // and handle the thunk actions instead
     builder
       .addCase(login.fulfilled, (state, action) => {
         state.username = action.payload

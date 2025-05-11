@@ -16,14 +16,6 @@ export const SinglePostPage = () => {
 
   let content: React.ReactNode
 
-  // if (!post) {
-  //   return (
-  //     <section>
-  //       <h2>Post not found!</h2>
-  //     </section>
-  //   )
-  // }
-
   const canEdit = currentUsername === post?.user
 
   if (isFetching) {

@@ -4,7 +4,7 @@ import { PostAuthor } from '../posts/PostAuthor'
 import { TimeAgo } from '@/components/TimeAgo'
 import { useDispatch } from 'react-redux'
 import { useLayoutEffect } from 'react'
-import classNames from 'classnames'
+import classnames from 'classnames'
 
 export const NotificationsList = () => {
   const dispatch = useDispatch()
@@ -17,7 +17,7 @@ export const NotificationsList = () => {
 
   const renderedNotifications = notifications.map((notification) => {
     const metadata = notificationsMetadata[notification.id]
-    const notificationClassname = classNames('notification', {
+    const notificationClassname = classnames('notification', {
       new: metadata.isNew,
     })
 

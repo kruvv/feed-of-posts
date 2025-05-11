@@ -9,8 +9,7 @@ import { worker } from './api/server'
 
 import './primitiveui.css'
 import './index.css'
-import { apiSliceWithUsers, fetchUsers } from './features/users/usersSlice'
-import { apiSlice } from './features/api/apiSlice'
+import { apiSliceWithUsers } from './features/users/usersSlice'
 
 // Wrap app rendering so we can wait for the mock API to initialize
 async function start() {
